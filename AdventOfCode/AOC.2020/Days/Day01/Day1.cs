@@ -9,7 +9,7 @@ namespace AOC._2020.Days
     {
         public override int Main_Int32()
         {
-            var path = @".\Days\Day1\input.txt";
+            var path = @".\Days\Day01\input.txt";
 
             var str = System.IO.File.ReadAllLines(path);
             var values = str.Select(a => Convert.ToInt32(a)).ToList();

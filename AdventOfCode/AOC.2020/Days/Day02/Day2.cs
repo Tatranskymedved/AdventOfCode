@@ -9,7 +9,7 @@ namespace AOC._2020.Days
     {
         public override int Main_Int32()
         {
-            var path = @".\Days\Day2\input.txt";
+            var path = @".\Days\Day02\input.txt";
 
             var str = System.IO.File.ReadAllLines(path);
             var charsToRemove = new char[] { ' ', ':', '-' };
