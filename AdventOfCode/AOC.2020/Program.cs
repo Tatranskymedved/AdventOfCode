@@ -1,4 +1,4 @@
-﻿using AOC.Days._2020;
+﻿using AOC._2020.Days;
 using System;
 
 namespace AOC._2020
@@ -7,7 +7,8 @@ namespace AOC._2020
     {
         static void Main(string[] args)
         {
-            var day = new Day1();
+            //var day = new Day1();
+            var day = new Day2();
             Console.WriteLine(day.Main());
 
             Console.ReadLine();

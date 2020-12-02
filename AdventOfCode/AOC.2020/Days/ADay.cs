@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AOC.Days._2020
+namespace AOC._2020.Days
 {
     public abstract class ADay
     {

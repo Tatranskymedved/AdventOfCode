@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AOC.Days._2020
+namespace AOC._2020.Days
 {
     class Day1 : ADay
     {
