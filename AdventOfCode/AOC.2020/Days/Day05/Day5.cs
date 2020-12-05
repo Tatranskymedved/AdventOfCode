@@ -64,6 +64,12 @@ namespace AOC._2020.Days
                                 ListRows[4](Row[4]) +
                                 ListRows[5](Row[5]) +
                                 ListRows[6](Row[6]);
+        /// <summary>
+        /// Alternative solution with linq
+        /// </summary>
+        public int RowNumberLinq => Row.Select((item,index) => new { item, index})
+                                       .Sum((a) => ListRows[a.index](a.item));
+
         public int ColumnNumber => ListCols[0](Column[0]) +
                                    ListCols[1](Column[1]) +
                                    ListCols[2](Column[2]);
