@@ -10,14 +10,86 @@ namespace AOC._2020.Days
         public override int Main_Int32()
         {
             var path = @".\Days\Day07\input.txt";
+            //var path = @".\Days\Day07\myInput.txt";
 
             var str = System.IO.File.ReadAllLines(path);
 
-            var bc = new BagCollector();
-            bc.Parse(str);
+            //Part 1
+            //var bc = new BagCollector();
+            //bc.Parse(str);
+            //return bc.GetBagsThatContains("shiny gold").Count();
 
-            return bc.GetBagsThatContains("shiny gold").Count();
+            //Part 2
+            var manager = new BagRelationManager();
+            manager.CreateRelations(str);
+            return manager.GetCountOfItemReccursive("shiny gold");
         }
+    }
+
+    class BagRelationManager
+    {
+        public List<BagToBagRelation> list = new List<BagToBagRelation>();
+
+        public void CreateRelations(string[] lines)
+        {
+            foreach (var line in lines)
+            {
+                CreateRelations(line);
+            }
+        }
+
+        public void CreateRelations(string line)
+        {
+            var lineToTwoParts = GetNameAndContainmentFromLine(line);
+            var parent = lineToTwoParts[0];
+
+            if (lineToTwoParts[1].Equals("no other bags.")) return;
+
+            var childs = GetContainmentNodesAsString(lineToTwoParts[1]);
+            foreach (var child in childs)
+            {
+                var singleBagSplit = child.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var nodeName = singleBagSplit[1] + " " + singleBagSplit[2];
+                var count = Convert.ToInt32(singleBagSplit[0]);
+
+                var relation = new BagToBagRelation()
+                {
+                    ParentBag = parent,
+                    ChildBag = nodeName,
+                    CountOfChildBag = count
+                };
+
+                list.Add(relation);
+            }
+        }
+
+        public List<BagToBagRelation> GetRelationsWithParent(string parentValue) => list.Where(a => a.ParentBag == parentValue).ToList();
+        public int GetCountOfItemReccursive(string item)
+        {
+            var relationsToItem = GetRelationsWithParent(item);
+
+            int count = relationsToItem.Sum(a => a.CountOfChildBag);
+
+            foreach (var relation in relationsToItem)
+            {
+                count += relation.CountOfChildBag * GetCountOfItemReccursive(relation.ChildBag);
+            }
+
+            return count;
+        }
+
+        static char[] splitChars = new char[] { ',', '.' };
+        public string[] GetNameAndContainmentFromLine(string line) => line.Split(" bags contain ");
+        public string[] GetContainmentNodesAsString(string line) => line.Replace(" bags", "").Replace(" bag", "").Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    class BagToBagRelation
+    {
+        public string ParentBag;
+        public string ChildBag;
+        public int CountOfChildBag;
+
+        public BagToBagRelation() { }
     }
 
     /// <summary>
@@ -26,7 +98,7 @@ namespace AOC._2020.Days
     class BagCollector
     {
         public List<Bag> Bags = new List<Bag>();
-        
+
         public void Parse(string[] lines)
         {
             foreach (var line in lines)
@@ -56,14 +128,14 @@ namespace AOC._2020.Days
                     foundNew = foundNewBitStepUp;
             }
 
-            while(foundNew)
+            while (foundNew)
             {
                 foundNew = false;
 
                 var copiedBags = hashSetOfBags.ToArray();
                 foreach (var bag in copiedBags)
                 {
-                    var foundNewBitStepUp = this.ReccursiveGetBagsThatContains(bag,ref hashSetOfBags);
+                    var foundNewBitStepUp = this.ReccursiveGetBagsThatContains(bag, ref hashSetOfBags);
                     if (foundNewBitStepUp)
                         foundNew = foundNewBitStepUp;
                 }
