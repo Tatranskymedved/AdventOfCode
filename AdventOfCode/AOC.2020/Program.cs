@@ -7,7 +7,7 @@ namespace AOC._2020
     {
         static void Main(string[] args)
         {
-            var day = new Day14();
+            var day = new Day15();
             Console.WriteLine(day.Main());
 
             Console.ReadLine();
