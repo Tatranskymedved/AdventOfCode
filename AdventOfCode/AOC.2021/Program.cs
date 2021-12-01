@@ -1,13 +1,17 @@
-﻿using AOC._2020.Days;
+﻿using AOC._2021.Days;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace AOC._2020
+namespace AOC._2021
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var day = new Day16();
+            var day = new Day1();
             Console.WriteLine(day.Main());
 
             Console.ReadLine();
