@@ -11,7 +11,7 @@ namespace AOC._2021
     {
         static void Main(string[] args)
         {
-            var day = new Day4();
+            var day = new Day5();
             Console.WriteLine(day.Main());
 
             Console.ReadLine();
