@@ -12,160 +12,177 @@ namespace AOC._2021.Days
     {
         public override double Main_Double()
         {
-            var path = @".\Days\Day15\input2.txt";
+            var path = @".\Days\Day15\input.txt";
 
             var str = System.IO.File.ReadAllLines(path);
-            var charsToRemove = new char[] { ' ', ':', '-' };
 
-            var values = str.Select(line =>
-            {
-                var row = line.Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries);
-                return row;
-            });
+            var cl = new ChitonLeaver();
+            cl.Run(str);
 
-            var cl = new ChitonLeaver(str, charsToRemove);
-
-            return cl.GetMinSumOfTraversals();
+            return 0;
         }
     }
 
-
-
+    //Unproudly stolen from: https://github.com/JKolkman/AdventOfCode/blob/master/ACC2021/day15/Day15.cs
     class ChitonLeaver
     {
-        public Dictionary<ChitonNode, List<ChitonNode>> AdjacencyDict { get; set; } = new Dictionary<ChitonNode, List<ChitonNode>>();
-        public ChitonNode FirstNode { get; set; }
-        public ChitonNode LastNode { get; set; }
-
-        private List<ChitonNode> nodes = new List<ChitonNode>();
-
-        private Stack<ChitonNode> path = new Stack<ChitonNode>();
-        public double Sum { get; set; } = 0;
-        public double MinSum { get; set; } = double.MaxValue;
-
-        HashSet<ChitonNode> nodesThatAreBeingProcess = new HashSet<ChitonNode>();
-
-        public ChitonLeaver(string[] str, char[] charsToRemove)
+        private string[] str;
+        private Node[,] grid;
+        public void Run(string[] inputString)
         {
-            for (int y = 0; y < str.Length; y++)
+            str = inputString;
+            grid = new Node[str.Length, str[0].Length];
+            for (var i = 0; i < str.Length; i++)
             {
-                var row = str[y];
-                for (int x = 0; x < row.Length; x++)
+                for (var j = 0; j < str[i].Length; j++)
                 {
-                    var value = Convert.ToInt32(row[x].ToString());
-                    var curr = new ChitonNode(x, y, value);
-                    nodes.Add(curr);
+                    var weight = int.Parse(str[i].ToCharArray()[j].ToString());
+                    grid[i, j] = new Node(j, i, weight);
                 }
             }
 
-            int lastX = nodes.Max(a => a.X);
-            int lastY = nodes.Max(a => a.Y);
-            FirstNode = nodes.First(a => a.X == 0 && a.Y == 0);
-            LastNode = nodes.First(a => a.X == lastX && a.Y == lastY);
-
-            for (int i = nodes.Count - 1; i >= 0; i--)
+            var expandedGrid = new Node[grid.GetLength(0) * 5, grid.GetLength(1) * 5];
+            for (var i = 0; i < str.Length; i++)
             {
-                var node = nodes[i];
-
-                CountCostForNode(node);
-            }
-        }
-
-        private void CountCostForNode(ChitonNode node)
-        {
-            if (node.lowerCostToNeighbor != null) return;
-            if (nodesThatAreBeingProcess.Contains(node)) return;
-
-            if (node == LastNode)
-            {
-                node.lowerCostToNeighbor = LastNode.costOfThisNode;
-                node.LowerCostNeighboringNodeToEnd = LastNode;
-                node.estimate = LastNode.costOfThisNode;
-                return;
-            }
-
-            nodesThatAreBeingProcess.Add(node);
-
-            var possiblePaths = new List<ChitonNode>() {
-                GetNodeAtCoords(node.X + 1, node.Y),
-                GetNodeAtCoords(node.X - 1, node.Y),
-                GetNodeAtCoords(node.X, node.Y + 1),
-                GetNodeAtCoords(node.X, node.Y - 1),
-            }.Where(a => a != null).ToList();
-
-            var notCountedPaths = possiblePaths.Where(a => a.lowerCostToNeighbor == null).ToList();
-            for (int i = 0; i < notCountedPaths.Count; i++)
-            {
-                CountCostForNode(notCountedPaths[i]);
-            }
-
-            node.LowerCostNeighboringNodeToEnd = possiblePaths.First(a => a.lowerCostToNeighbor == possiblePaths.Min(a => a.lowerCostToNeighbor));
-            node.lowerCostToNeighbor = node.LowerCostNeighboringNodeToEnd.lowerCostToNeighbor + node.costOfThisNode;
-
-            nodesThatAreBeingProcess.Remove(node);
-        }
-
-        public ChitonNode GetNodeAtCoords(int x, int y)
-        {
-            return nodes.FirstOrDefault(a => a.X == x && a.Y == y);
-        }
-
-        public double GetMinSumOfTraversals()
-        {
-            //Traverse(AdjacencyDict.First(a => a.Key.X == 0 && a.Key.Y == 0).Key);
-            return MinSum;
-        }
-
-        private void Traverse(ChitonNode v, int depth = 0)
-        {
-            path.Push(v);
-            depth++;
-
-            //if ((new System.Diagnostics.StackTrace()).FrameCount > 1000) return;
-            if (v.Equals(LastNode))
-            {
-                //var tmp = path.ToList();
-                Sum = path.Sum(a => Convert.ToDouble(a.costOfThisNode)); ;
-                Sum -= AdjacencyDict.First(a => a.Key.X == 0 && a.Key.Y == 0).Key.costOfThisNode;
-
-                if (MinSum > Sum)
+                for (var j = 0; j < str[i].Length; j++)
                 {
-                    MinSum = Sum;
-                    Console.WriteLine(MinSum);
+                    var gridSizeX = str[i].Length;
+                    var gridSizeY = str.Length;
+                    for (var k = 0; k < 5; k++)
+                    {
+                        var newX = j + k * gridSizeX;
+                        for (var l = 0; l < 5; l++)
+                        {
+                            var input = int.Parse(str[i][j].ToString());
+                            input += k;
+                            input += l;
+                            if (input > 9)
+                            {
+                                input -= 9;
+                            }
+
+                            var newY = i + l * gridSizeY;
+                            expandedGrid[newY, newX] = new Node(newX, newY, input);
+                        }
+                    }
+                }
+            }
+            Console.WriteLine();
+            Console.Write(("(1) "));
+            Tasks();
+            grid = expandedGrid;
+            Console.Write(("(2) "));
+            Tasks();
+        }
+
+        private void Tasks()
+        {
+            var time = DateTime.UtcNow;
+            grid[0, 0].Distance = 0;
+            var queue = new Queue<(int, int)>();
+            var visited = new HashSet<(int, int)>();
+
+            var nodeDict = new Dictionary<(int, int), Node>
+            {
+                [(0, 0)] = grid[0, 0]
+            };
+            queue.Enqueue((0, 0));
+            while (queue.TryDequeue(out var coords))
+            {
+                var n = nodeDict[coords];
+                visited.Add(coords);
+                nodeDict.Remove(coords);
+
+                FindNeighbours(n).ToList().ForEach(x =>
+                {
+                    var nCoord = (x.Y, x.X);
+                    if (visited.Contains(nCoord) || nodeDict.ContainsKey(nCoord))
+                    {
+                        if (x.Distance > x.Weight + n.Distance)
+                        {
+                            x.Distance = x.Weight + n.Distance;
+                        }
+
+                        if (n.Distance <= n.Weight + x.Distance) return;
+                        n.Distance = n.Weight + x.Distance;
+                    }
+                    else
+                    {
+                        x.Distance = x.Weight + n.Distance;
+                        nodeDict.Add((x.Y, x.X), x);
+                        queue.Enqueue((x.Y, x.X));
+                    }
+                });
+            }
+
+            var finalNode = grid[grid.GetUpperBound(0), grid.GetUpperBound(1)];
+            Console.WriteLine(finalNode.Distance + " : " + (DateTime.UtcNow - time));
+            //PrintGrid(finalNode.VisitedNodes);
+        }
+
+        private IEnumerable<Node> FindNeighbours(Node node)
+        {
+            var x = node.X;
+            var y = node.Y;
+            var neighbours = new List<Node>();
+
+            if (x < grid.GetLength(1) - 1)
+            {
+                neighbours.Add(grid[y, x + 1]);
+            }
+
+            if (y < grid.GetLength(0) - 1)
+            {
+                neighbours.Add(grid[y + 1, x]);
+            }
+
+            return neighbours;
+        }
+
+        private void PrintGrid(System.Collections.Generic.ICollection<Node> list, Node[,] customGrid = null)
+        {
+            customGrid ??= grid;
+
+            var y = customGrid.GetLength(0);
+            var x = customGrid.GetLength(1);
+            Console.WriteLine();
+            for (var i = 0; i < y; i++)
+            {
+                for (var j = 0; j < x; j++)
+                {
+                    Console.ForegroundColor =
+                        list.Contains(customGrid[i, j]) ? ConsoleColor.Cyan : ConsoleColor.DarkGray;
+
+                    Console.Write($" {customGrid[i, j].Weight}");
+                    Console.ResetColor();
                 }
 
-                //tmp.Reverse();
-                //Console.WriteLine(string.Join(",", tmp));
-
-                return;
+                Console.WriteLine();
             }
 
-            //if (depth > 10) return;
-
-            var neighbours = AdjacencyDict[v];
-            foreach (var neighbour in neighbours)
-            {
-                Traverse(neighbour, depth);
-                path.Pop();
-            }
         }
     }
 
-    class Point2D : IEquatable<Point2D>
+    internal class Node
     {
-        public int X { get; set; }
-        public int Y { get; set; }
+        public int Distance { get; set; }
+        public readonly int Y;
+        public readonly int X;
 
-        public bool Equals([AllowNull] Point2D other)
+        public readonly int Weight;
+        //public List<Node> VisitedNodes;
+
+        public Node(int x, int y, int weight)
         {
-            if (this is null) return false;
-            if (other is null) return false;
-
-            return this.X == other.X && this.Y == other.Y;
+            X = x;
+            Y = y;
+            Weight = weight;
+            Distance = int.MaxValue / 2;
+            //VisitedNodes = new List<Node>();
         }
     }
 
-    class ChitonNode : IEquatable<ChitonNode>
+    public class ChitonNode : IEquatable<ChitonNode>
     {
         public int X { get; set; }
         public int Y { get; set; }
@@ -174,7 +191,8 @@ namespace AOC._2021.Days
 
         public int? startToThisNode;
         public int? estimate;
-        public int? lowerCostToNeighbor;
+        public int? trueLowestCostToEnd;
+        public ChitonNode bestNextHop;
 
         public ChitonNode(int x, int y, int value)
         {
@@ -198,7 +216,7 @@ namespace AOC._2021.Days
 
         public override string ToString()
         {
-            return $"{X},{Y}: {lowerCostToNeighbor}";
+            return $"{X.ToString().PadLeft(3)},{Y.ToString().PadLeft(3)}: est:{estimate} | true:{trueLowestCostToEnd}";
         }
 
         public bool Equals(ChitonNode other)
