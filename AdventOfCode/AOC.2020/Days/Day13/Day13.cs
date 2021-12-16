@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AOC.Common.Days;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;

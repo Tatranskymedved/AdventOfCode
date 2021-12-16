@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AOC.2020", "AOC.2020\AOC.2020.csproj", "{04483AC0-7986-4283-B38E-633EBFBB1F53}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AOC.2021", "AOC.2021\AOC.2021.csproj", "{9DDA05FE-B4C6-42D6-AB57-F619B64D0D4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AOC.2021", "AOC.2021\AOC.2021.csproj", "{9DDA05FE-B4C6-42D6-AB57-F619B64D0D4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AOC.Common", "AOC.Common\AOC.Common.csproj", "{13BB6163-1AFA-46F2-8764-B76A15A542E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{9DDA05FE-B4C6-42D6-AB57-F619B64D0D4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DDA05FE-B4C6-42D6-AB57-F619B64D0D4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DDA05FE-B4C6-42D6-AB57-F619B64D0D4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13BB6163-1AFA-46F2-8764-B76A15A542E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13BB6163-1AFA-46F2-8764-B76A15A542E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13BB6163-1AFA-46F2-8764-B76A15A542E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13BB6163-1AFA-46F2-8764-B76A15A542E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

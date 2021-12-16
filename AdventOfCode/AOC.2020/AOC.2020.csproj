@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AOC.Common\AOC.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Days\Day01\input.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

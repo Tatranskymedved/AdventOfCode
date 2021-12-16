@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AOC.Common.Days;
+using System;
 using System.Linq;
-using System.Text;
 
 namespace AOC._2020.Days
 {
