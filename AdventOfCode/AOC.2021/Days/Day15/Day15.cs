@@ -117,7 +117,6 @@ namespace AOC._2021.Days
 
             var finalNode = grid[grid.GetUpperBound(0), grid.GetUpperBound(1)];
             Console.WriteLine(finalNode.Distance + " : " + (DateTime.UtcNow - time));
-            //PrintGrid(finalNode.VisitedNodes);
         }
 
         private IEnumerable<Node> FindNeighbours(Node node)
@@ -138,29 +137,6 @@ namespace AOC._2021.Days
 
             return neighbours;
         }
-
-        private void PrintGrid(System.Collections.Generic.ICollection<Node> list, Node[,] customGrid = null)
-        {
-            customGrid ??= grid;
-
-            var y = customGrid.GetLength(0);
-            var x = customGrid.GetLength(1);
-            Console.WriteLine();
-            for (var i = 0; i < y; i++)
-            {
-                for (var j = 0; j < x; j++)
-                {
-                    Console.ForegroundColor =
-                        list.Contains(customGrid[i, j]) ? ConsoleColor.Cyan : ConsoleColor.DarkGray;
-
-                    Console.Write($" {customGrid[i, j].Weight}");
-                    Console.ResetColor();
-                }
-
-                Console.WriteLine();
-            }
-
-        }
     }
 
     internal class Node
@@ -170,7 +146,6 @@ namespace AOC._2021.Days
         public readonly int X;
 
         public readonly int Weight;
-        //public List<Node> VisitedNodes;
 
         public Node(int x, int y, int weight)
         {
@@ -178,52 +153,6 @@ namespace AOC._2021.Days
             Y = y;
             Weight = weight;
             Distance = int.MaxValue / 2;
-            //VisitedNodes = new List<Node>();
-        }
-    }
-
-    public class ChitonNode : IEquatable<ChitonNode>
-    {
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int costOfThisNode { get; set; }
-        private int hash;
-
-        public int? startToThisNode;
-        public int? estimate;
-        public int? trueLowestCostToEnd;
-        public ChitonNode bestNextHop;
-
-        public ChitonNode(int x, int y, int value)
-        {
-            this.X = x;
-            this.Y = y;
-            this.costOfThisNode = value;
-            hash = CalcHashCode();
-        }
-
-        private int CalcHashCode() => X * 8243 + Y * 6607 + costOfThisNode * 1871;
-
-        public override int GetHashCode()
-        {
-            return hash;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return this.Equals(obj as ChitonNode);
-        }
-
-        public override string ToString()
-        {
-            return $"{X.ToString().PadLeft(3)},{Y.ToString().PadLeft(3)}: est:{estimate} | true:{trueLowestCostToEnd}";
-        }
-
-        public bool Equals(ChitonNode other)
-        {
-            if (other == null) return false;
-
-            return other.GetHashCode() == this.GetHashCode();
         }
     }
 }
