@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace AOC._2021.Days
+namespace AOC._2022.Days
 {
     class Day18 : ADay
     {
