@@ -46,46 +46,46 @@ namespace AOC._2022.Days
 
         public Snail(string line, int depth)
         {
-            Depth = depth;
-            if (line.Length == 1)
-            {
-                Number = Convert.ToInt32(line[0].ToString());
-                return;
-            }
+            //Depth = depth;
+            //if (line.Length == 1)
+            //{
+            //    Number = Convert.ToInt32(line[0].ToString());
+            //    return;
+            //}
 
-            var updLine = line.Remove(0, 1);
-            updLine = updLine.Remove(updLine.Length - 1, 1);
+            //var updLine = line.Remove(0, 1);
+            //updLine = updLine.Remove(updLine.Length - 1, 1);
 
-            if(updLine.Length)
+            //if(updLine.Length)
 
-            var resJustNumbers = regJustNumbers.Match(updLine);
-            var resNumberRight = regNumberRight.Match(updLine);
-            var resNumberLeft = regNumberLeft.Match(updLine);
+            //var resJustNumbers = regJustNumbers.Match(updLine);
+            //var resNumberRight = regNumberRight.Match(updLine);
+            //var resNumberLeft = regNumberLeft.Match(updLine);
 
 
-            if (updLine[0] == '[' && updLine[updLine.Length - 1] == ']')
-            {
-                child = new Snail(updLine, depth + 1);
-            }
-            else if (resJustNumbers.Success)
-            {
-                X = Convert.ToInt32(resJustNumbers.Groups["x"].Value);
-                Y = Convert.ToInt32(resJustNumbers.Groups["y"].Value);
-            }
-            else if (resNumberRight.Success)
-            {
-                left = new Snail(resNumberRight.Groups["str"].Value, depth + 1);
-                Y = Convert.ToInt32(resNumberRight.Groups["y"].Value);
-            }
-            else if (resNumberLeft.Success)
-            {
-                X = Convert.ToInt32(resNumberLeft.Groups["x"].Value);
-                right = new Snail(resNumberLeft.Groups["str"].Value, depth + 1);
-            }
-            else
-            {
-                ;
-            }
+            //if (updLine[0] == '[' && updLine[updLine.Length - 1] == ']')
+            //{
+            //    child = new Snail(updLine, depth + 1);
+            //}
+            //else if (resJustNumbers.Success)
+            //{
+            //    X = Convert.ToInt32(resJustNumbers.Groups["x"].Value);
+            //    Y = Convert.ToInt32(resJustNumbers.Groups["y"].Value);
+            //}
+            //else if (resNumberRight.Success)
+            //{
+            //    left = new Snail(resNumberRight.Groups["str"].Value, depth + 1);
+            //    Y = Convert.ToInt32(resNumberRight.Groups["y"].Value);
+            //}
+            //else if (resNumberLeft.Success)
+            //{
+            //    X = Convert.ToInt32(resNumberLeft.Groups["x"].Value);
+            //    right = new Snail(resNumberLeft.Groups["str"].Value, depth + 1);
+            //}
+            //else
+            //{
+            //    ;
+            //}
         }
     }
 }

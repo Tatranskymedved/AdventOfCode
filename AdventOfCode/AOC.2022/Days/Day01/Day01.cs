@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 namespace AOC._2022.Days
 {
@@ -12,33 +13,40 @@ namespace AOC._2022.Days
             var path = @".\Days\Day01\input.txt";
 
             var str = System.IO.File.ReadAllLines(path);
-            var values = str.Select(a => Convert.ToInt32(a)).ToList();
-            int increment = 0, decrement = 0;
+            var elves = new List<Elf>();
+            int sum = 0;
+            for (int i = 0; i < str.Length; i++)
+            {
+                var line = str[i];
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    var elf =new Elf() { Calories = sum };
+                    elves.Add(elf);
+                    sum = 0;
+                    continue;
+                }
+                else
+                {
+                    sum += Int32.Parse(line);
+                }
+            }
+            if (sum != 0)
+            {
+                var elf = new Elf() { Calories = sum };
+                elves.Add(elf);
+            }
 
             //Part 1
-            //CountIncDec(values, ref increment, ref decrement);
+            //return elves.Max(a => a.Calories).ToString();
 
             //Part 2
-            var sumValues = new List<int>();
-
-            for (int i = 0; i < values.Count - 2; i++)
-            {
-                sumValues.Add(values[i] + values[i + 1] + values[i + 2]);
-            }
-
-            CountIncDec(sumValues, ref increment, ref decrement);
-            return $"Increment: {increment}\tDecrement: {decrement}";
+            var sortedElves = elves.OrderByDescending(a => a.Calories).ToList();
+            return (sortedElves[0].Calories + sortedElves[1].Calories + sortedElves[2].Calories).ToString();
         }
 
-        public void CountIncDec(List<int> list, ref int increment, ref int decrement)
+        class Elf
         {
-            for (int i = 1, j = 0; i < list.Count; i++, j++)
-            {
-                if (list[i] > list[j])
-                    increment++;
-                else
-                    decrement++;
-            }
+            public int Calories { get; set; } = 0;
         }
     }
 }
