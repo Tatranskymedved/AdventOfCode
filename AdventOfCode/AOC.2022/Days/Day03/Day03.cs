@@ -8,102 +8,72 @@ namespace AOC._2022.Days
 {
     class Day03 : ADay
     {
-        int bitSize;
-
         public override double Main_Double()
         {
             var path = @".\Days\Day03\input.txt";
             //var path = @".\Days\Day03\myInput.txt";
 
-            var str = System.IO.File.ReadAllLines(path).ToList();
-            bitSize = str.First().Length;
+            var str = System.IO.File.ReadAllLines(path).Select(a => new Rucksack() { Value = a }).ToList();
 
             //Part 1
-            //var array = new int[bitSize];
-            //for (int i = 0; i < str.Length; i++)
-            //{
-            //    var line = str[i];
-            //    for (int j = 0; j < bitSize; j++)
-            //    {
-            //        if (line[j] == '1')
-            //            array[j]++;
-            //    }
-            //}
-
-            //int mostCommon = 0;
-            //for (int i = 0; i < array.Length; i++)
-            //{
-            //    if (array[i] > (str.Length / 2))
-            //    {
-            //        mostCommon |= 1 << (array.Length - i - 1);
-            //    }
-            //}
-            //int leastCommon = Convert.ToInt32(Math.Pow(2, array.Length)) - mostCommon - 1;
-
-            //return mostCommon * leastCommon;
+            //return str.Sum(a => a.Priority);
 
             //Part 2
-            var oxygen = convertFromStringToInt(removeFromList(str.ToList(), true));
-            var CO2 = convertFromStringToInt(removeFromList(str, false));
-            return oxygen * CO2;
+            var rucksackGroups = str.Select((x, i) => new { x, i })
+                    .GroupBy(x => x.i / 3)
+                    .Select(g => g.ToList())
+                    .Select(g => new RucksackGroup { Elf1 = g[0].x, Elf2 = g[1].x, Elf3 = g[2].x });
+
+            return rucksackGroups.Sum(b => b.Priority);
         }
 
-        public int convertFromStringToInt(string number)
+        class RucksackGroup
         {
-            int result = 0;
-            for (int i = 0; i < number.Length; i++)
-            {
-                result |= (number[i] == '1' ? 1 : 0)  << (number.Length - i - 1);
-            }
-            return result;
-        }
+            public Rucksack Elf1 { get; set; }
+            public Rucksack Elf2 { get; set; }
+            public Rucksack Elf3 { get; set; }
+            public string PrioS => FindCommonCharAsString(Elf1.Value, Elf2.Value, Elf3.Value);
+            public int Priority => AOC.Common.AlphabetHelpers.GetAlphabetForCharAsString(PrioS);
 
-
-        public string removeFromList(List<string> list, bool isMostCommonValue)
-        {
-            for (int j = 0; j < bitSize; j++)
+            public string FindCommonCharAsString(string a, string b, string c)
             {
-                double count = list.Count() / 2d;
-                int one = list.Count(a => a[j] == '1');
-                if (isMostCommonValue)
+                for (int i = 0; i < a.Length; i++)
                 {
-                    if (one < count)
+                    for (int j = 0; j < b.Length; j++)
                     {
-                        list.Where(a => a[j] == '1').ToList().ForEach(a => list.Remove(a));
-                    }
-                    else if(one == count)
-                    {
-                        list.Where(a => a[j] == '0').ToList().ForEach(a => list.Remove(a));
-                    }
-                    else
-                    {
-                        list.Where(a => a[j] == '0').ToList().ForEach(a => list.Remove(a));
+                        for (int k = 0; k < c.Length; k++)
+                        {
+                            if (a[i] == b[j] && b[j] == c[k])
+                                return a[i].ToString();
+                        }
                     }
                 }
 
-                if (isMostCommonValue == false)
+                return "";
+            }
+        }
+
+        class Rucksack
+        {
+            public string Value { get; set; }
+            public string Item1 => Value.Substring(0, Value.Length / 2);
+            public string Item2 => Value.Substring(Value.Length / 2);
+            public string PrioS => FindCommonCharAsString(Item1, Item2);
+            public int Priority => AOC.Common.AlphabetHelpers.GetAlphabetForCharAsString(PrioS);
+
+            public string FindCommonCharAsString(string a, string b)
+            {
+                for (int i = 0; i < a.Length; i++)
                 {
-                    if (one > count)
+                    for (int j = 0; j < b.Length; j++)
                     {
-                        list.Where(a => a[j] == '1').ToList().ForEach(a => list.Remove(a));
-                    }
-                    else if (one == count)
-                    {
-                        list.Where(a => a[j] == '1').ToList().ForEach(a => list.Remove(a));
-                    }
-                    else
-                    {
-                        list.Where(a => a[j] == '0').ToList().ForEach(a => list.Remove(a));
+                        if (a[i] == b[j])
+                            return a[i].ToString();
                     }
                 }
 
-
-
-                if (list.Count() == 1)
-                    return list.First();
+                return "";
             }
-
-            return "none";
         }
     }
 }
