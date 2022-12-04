@@ -13,120 +13,44 @@ namespace AOC._2022.Days
         {
             var path = @".\Days\Day04\input.txt";
 
-            var str = System.IO.File.ReadAllLines(path);
-            var charsToRemove = new char[] { ' ', ',' };
+            var lines = System.IO.File.ReadAllLines(path);
+            var elves = lines.Select(a => new ElvenPair(a.Split(','))).ToList();
 
-            var bm = new BoardManager(str, charsToRemove);
-
-            return bm.MakeCalls();
+            //return elves.Count(a => a.DoesFullyContainOneTheOther);
+            return elves.Count(a => a.Overlaps);
         }
-    }
 
-    class BoardManager
-    {
-        List<int> calls = new List<int>();
-        List<Board> boards = new List<Board>();
-
-        public BoardManager(string[] lines, char[] charsToRemove)
+        class ElvenPair
         {
-            calls.AddRange(lines.First().Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries).Select(a => Convert.ToInt32(a)));
+            public HashSet<int> Elf1 { get; set; }
+            public HashSet<int> Elf2 { get; set; }
+            public bool DoesElf1FullyContainElf2 => Elf2.IsSubsetOf(Elf1);
+            public bool DoesElf2FullyContainElf1 => Elf1.IsSubsetOf(Elf2);
+            public bool DoesFullyContainOneTheOther => DoesElf1FullyContainElf2 || DoesElf2FullyContainElf1;
+            public bool Overlaps => Elf1.Overlaps(Elf2);
 
-            for (int i = 2; i < lines.Length; i += 6)
+            public ElvenPair() { }
+            public ElvenPair(string[] elves)
             {
-                boards.Add(new Board(lines.Skip(i).Take(5).ToArray(), charsToRemove));
+                Elf1 = new HashSet<int>(GenerateNumbersFromRange(elves[0]));
+                Elf2 = new HashSet<int>(GenerateNumbersFromRange(elves[1]));
             }
-        }
 
-        public int MakeCalls()
-        {
-            bool isLast = false;
-
-            for (int i = 0; i < calls.Count; i++)
+            public static IEnumerable<int> GenerateNumbersFromRange(string range)
             {
-                var call = calls[i];
-                var brds = boards.Where(a => a.IsFinished == false);
-                isLast = brds.Count() == 1;
+                var result = new List<int>();
 
-                foreach (var board in brds)
+                var r = range.Split('-');
+                var start = Convert.ToInt32(r[0]);
+                var end = Convert.ToInt32(r[1]);
+
+                for (int i = start; i <= end; i++)
                 {
-                    var sum = board.MakeCall(call);
-                    //Part 1
-                    if (sum != null)
-                        //Part 2
-                        if (isLast)
-                            return sum.Value * call;
-
+                    result.Add(i);
                 }
+
+                return result;
             }
-            return 0;
-        }
-    }
-
-    class Board
-    {
-        public bool IsFinished { get; set; } = false;
-        List<Number> numbers = new List<Number>();
-
-        public int SumOfUnmarked => numbers.Where(a => a.WasDrawn == false).Sum(a => a.Value);
-
-        public Board(string[] lines, char[] charsToRemove)
-        {
-            for (int i = 0; i < lines.Length; i++)
-            {
-                var nums = lines[i].Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries);
-
-                for (int j = 0; j < nums.Length; j++)
-                {
-                    numbers.Add(new Number(Convert.ToInt32(nums[j]), i, j));
-                }
-            }
-        }
-
-        public int? MakeCall(int call)
-        {
-            numbers.Where(a => a.Value == call).ToList().ForEach(a => a.WasDrawn = true);
-
-            if (numbers.Count(a => a.WasDrawn && a.PositionX == 0) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionX == 1) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionX == 2) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionX == 3) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionX == 4) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionY == 0) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionY == 1) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionY == 2) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionY == 3) == 5) { IsFinished = true; return SumOfUnmarked; }
-            if (numbers.Count(a => a.WasDrawn && a.PositionY == 4) == 5) { IsFinished = true; return SumOfUnmarked; }
-
-            return null;
-        }
-
-        public override string ToString()
-        {
-            return
-                string.Join(", ", numbers.Where(a => a.PositionX == 0).OrderBy(a => a.PositionY)) + Environment.NewLine +
-                string.Join(", ", numbers.Where(a => a.PositionX == 1).OrderBy(a => a.PositionY)) + Environment.NewLine +
-                string.Join(", ", numbers.Where(a => a.PositionX == 2).OrderBy(a => a.PositionY)) + Environment.NewLine +
-                string.Join(", ", numbers.Where(a => a.PositionX == 3).OrderBy(a => a.PositionY)) + Environment.NewLine +
-                string.Join(", ", numbers.Where(a => a.PositionX == 4).OrderBy(a => a.PositionY)) + Environment.NewLine;
-        }
-    }
-    class Number
-    {
-        public int Value { get; set; }
-        public int PositionX { get; set; }
-        public int PositionY { get; set; }
-        public bool WasDrawn { get; set; } = false;
-
-        public Number(int value, int x, int y)
-        {
-            Value = value;
-            PositionX = x;
-            PositionY = y;
-        }
-
-        public override string ToString()
-        {
-            return Value.ToString();
         }
     }
 }
