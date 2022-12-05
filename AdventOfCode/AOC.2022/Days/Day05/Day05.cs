@@ -8,145 +8,110 @@ namespace AOC._2022.Days
 {
     class Day05 : ADay
     {
-        public override int Main_Int32()
+        public override string Main_String()
         {
             var path = @".\Days\Day05\input.txt";
             //var path = @".\Days\Day05\input2.txt";
 
-            var str = System.IO.File.ReadAllLines(path);
-            var charsToRemove = new char[] { ' ', ':', '-', '>', ',' };
+            var str = System.IO.File.ReadAllLines(path).ToList();
+            var emptyLineIndex = str.IndexOf("");
 
-            var lines = str.Select(line =>
-            {
-                var row = line.Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries);
-                return new Line()
-                {
-                    X1 = Convert.ToInt32(row[0]),
-                    Y1 = Convert.ToInt32(row[1]),
-                    X2 = Convert.ToInt32(row[2]),
-                    Y2 = Convert.ToInt32(row[3]),
-                };
-            });
-            var max = lines.Max(a => a.MaxValue);
+            var sh = new StackHolder(str.Take(emptyLineIndex - 1).ToArray(), str.Skip(emptyLineIndex + 1).ToArray());
+            sh.PerformAllSteps(IsPartTwo: true);
 
-            var board = new HydrothermalVentsBoard(lines, max);
-
-            //Enable for nice ouput :)
-            //Console.WriteLine(board.ToString());
-
-            return board.CountOfAtLeastTwoOverlaps;
-        }
-    }
-
-    class HydrothermalVentsBoard
-    {
-        public int CountOfAtLeastTwoOverlaps => array.Count(a => a > 1);
-        int[] array;
-        int width;
-
-        public HydrothermalVentsBoard(IEnumerable<Line> lines, int max)
-        {
-            width = max + 1;
-            array = new int[width * width];
-
-            foreach (var line in lines)
-            {
-                fillArray(line);
-            }
+            return sh.TopCrates;
         }
 
-        private void fillArray(Line line)
+        class StackHolder
         {
-            if (line.IsVerticalOrHorizontal)
-            {
-                var smallerX = Math.Min(line.X1, line.X2);
-                var biggerX = Math.Max(line.X1, line.X2);
-                var smallerY = Math.Min(line.Y1, line.Y2);
-                var biggerY = Math.Max(line.Y1, line.Y2);
+            Stack<string>[] Stacks = new Stack<string>[11];
+            List<Step> Steps = new List<Step>();
 
-                for (int y = smallerY; y <= biggerY; y++)
+            public string TopCrates => string.Join("", Stacks.Select(a => a.Count > 0 ? a.Peek() : ""));
+
+            public StackHolder(string[] lines, string[] steps)
+            {
+                var charsToRemove = new char[] { ' ', '[', ']' };
+
+                for (int i = 0; i < Stacks.Length; i++)
                 {
-                    for (int x = smallerX; x <= biggerX; x++)
+                    Stacks[i] = new Stack<string>();
+                }
+
+                for (int i = lines.Length - 1; i >= 0; i--)
+                {
+                    var line = lines[i];
+                    line = line.Replace("    ", "[_]");
+
+                    var split = line.Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries);
+                    for (int j = 0; j < split.Length; j++)
                     {
-                        int index = x + y * width;
-                        array[index]++;
+                        var val = split[j];
+                        if (val != "_")
+                            Stacks[j + 1].Push(val);
+                    }
+                }
+
+                Steps = steps.Select(a => new Step(a)).ToList();
+            }
+
+            public void PerformAllSteps(bool IsPartTwo = true)
+            {
+                for (int i = 0; i < Steps.Count; i++)
+                {
+                    if (IsPartTwo)
+                    {
+                        Steps[i].PerformStepWithMultipleCrates(Stacks);
+                    }
+                    else
+                    {
+                        Steps[i].PerformStepWithSingleCrate(Stacks);
                     }
                 }
             }
-            else //return //part 1
-            {
-                int xSizer, ySizer;
-                Predicate<int> xPred, yPred;
-
-                if (line.X1 < line.X2 && line.Y1 < line.Y2)
-                {
-                    xSizer = 1;
-                    ySizer = 1;
-                    xPred = new Predicate<int>(a => a <= line.X2);
-                    yPred = new Predicate<int>(a => a <= line.Y2);
-                }
-                else if (line.X1 < line.X2 && line.Y1 > line.Y2)
-                {
-                    xSizer = 1;
-                    ySizer = -1;
-                    xPred = new Predicate<int>(a => a <= line.X2);
-                    yPred = new Predicate<int>(a => a >= line.Y2);
-                }
-                else if (line.X1 > line.X2 && line.Y1 < line.Y2)
-                {
-                    xSizer = -1;
-                    ySizer = 1;
-                    xPred = new Predicate<int>(a => a >= line.X2);
-                    yPred = new Predicate<int>(a => a <= line.Y2);
-                }
-                else //if (line.X1 > line.X2 && line.Y1 > line.Y2)
-                {
-                    xSizer = -1;
-                    ySizer = -1;
-                    xPred = new Predicate<int>(a => a >= line.X2);
-                    yPred = new Predicate<int>(a => a >= line.Y2);
-                }
-
-                for (int y = line.Y1, x = line.X1; xPred(x) && yPred(y); x += xSizer, y += ySizer)
-                {
-                    int index = x + y * width;
-                    array[index]++;
-                }
-            }
         }
 
-        public override string ToString()
+        class Step
         {
-            var chars = width.ToString().Length - 1;
+            public string Init { get; set; }
+            public int Count { get; set; }
+            public int StartIndex { get; set; }
+            public int EndIndex { get; set; }
 
-            StringBuilder sb = new StringBuilder();
-            for (int y = 0; y < width; y++)
+            public Step(string val)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    sb.Append(array[x + y * width].ToString().PadLeft(chars));
-                }
-                sb.AppendLine();
+                Init = val;
+                val = val.Replace("move ", "");
+                val = val.Replace(" from ", " ");
+                val = val.Replace(" to ", " ");
+                var vals = val.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                Count = Convert.ToInt32(vals[0]);
+                StartIndex = Convert.ToInt32(vals[1]);
+                EndIndex = Convert.ToInt32(vals[2]);
             }
 
-            return sb.ToString();
-        }
-    }
+            public void PerformStepWithSingleCrate(Stack<string>[] stacks)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    var tmp = stacks[StartIndex].Pop();
+                    stacks[EndIndex].Push(tmp);
+                }
+            }
 
-    class Line
-    {
-        public int X1 { get; set; }
-        public int Y1 { get; set; }
-        public int X2 { get; set; }
-        public int Y2 { get; set; }
-
-        public bool IsVerticalOrHorizontal => (X1 == X2) || (Y1 == Y2);
-
-        public int MaxValue => Math.Max(Math.Max(Math.Max(X1, X2), Y1), Y2);
-
-        public override string ToString()
-        {
-            return $"{X1},{Y1} -> {X2},{Y2}";
+            public void PerformStepWithMultipleCrates(Stack<string>[] stacks)
+            {
+                var tmp = new Stack<string>();
+                for (int i = 0; i < Count; i++)
+                {
+                    tmp.Push(stacks[StartIndex].Pop());
+                }
+                for (int i = 0; i < Count; i++)
+                {
+                    stacks[EndIndex].Push(tmp.Pop());
+                }
+            }
         }
     }
 }
