@@ -1,5 +1,7 @@
-﻿using AOC.Common.Days;
+﻿using AOC.Common;
+using AOC.Common.Days;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AOC._2022.Days
@@ -15,39 +17,108 @@ namespace AOC._2022.Days
             var str = System.IO.File.ReadAllLines(path);
             var charsToRemove = new char[] { ' ', ':', ',' };
 
-            int min = 100, max = 100;
-            var values = str.Select(line =>
+            var root = new MDirectory()
             {
-                var row = line.Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries).Select(a => Convert.ToInt32(a));
-                foreach (var item in row)
+                Name = "",
+                Parent = null,
+            };
+
+            var currDir = root;
+
+            for (int i = 0; i < str.Length; i++)
+            {
+                string line = str[i];
+
+                switch (line)
                 {
-                    min = Math.Min(min, item);
-                    max = Math.Max(max, item);
-                }
-                return row;
-            }).First();
-            GenerateTriangleNumber(max + 1);
-
-            var minFuel = int.MaxValue;
-            for (int i = min; i < max; i++)
-            {
-                int fuel = values.Sum(a => triangleArray[Math.Abs(i - a)]);
-                minFuel = Math.Min(fuel, minFuel);
+                    case var l when l.StartsWith("$ cd"):
+                        var cdPath = l.Substring(5);
+                        if (cdPath == "/")
+                        {
+                            currDir = root;
+                        }
+                        else if (cdPath == "..")
+                        {
+                            currDir = currDir.Parent;
+                        }
+                        else
+                        {
+                            if (currDir.Childs.ContainsKey(cdPath) == false)
+                                currDir.Childs[cdPath] = new MDirectory() { Name = cdPath, Parent = currDir };
+                            currDir = currDir.Childs[cdPath];
+                        }
+                        break;
+                    case var l when l.StartsWith("$ ls"):
+                        int j = i + 1;
+                        for (; j < str.Length && (str[j].StartsWith("$") == false); j++)
+                        {
+                            var lsLine = str[j];
+                            if (lsLine.StartsWith("dir"))
+                            {
+                                var dirName = lsLine.Substring(4);
+                                if (currDir.Childs.ContainsKey(dirName) == false)
+                                    currDir.Childs[dirName] = new MDirectory() { Name = dirName, Parent = currDir };
+                            }
+                            else
+                            {
+                                var ls = lsLine.Split(' ');
+                                currDir.Files[ls[1]] = new MFile() { Name = ls[1], Size = Convert.ToInt32(ls[0]), Parent = currDir };
+                            }
+                        }
+                        i = j - 1;
+                        break;
+                    default:
+                        throw new Exception("Unknown command");
+                        break;
+                };
             }
 
-            return minFuel;
+            var dirsAsList = new List<MDirectory>() { root } .Concat(root.Dirs).ToList();
+
+            //Part 1
+            //return dirsAsList.Sum(a => a.AOCSize);
+
+
+            //Part 2
+            const int totalMax    = 70000000;
+            const int needAtLeast = 30000000;
+
+            int currentOccupiedSize = root.Size;
+            int currentFreeSpace = totalMax - currentOccupiedSize;
+            int needToClearAtLeast = needAtLeast - currentFreeSpace;
+
+            var dirsThatFitTheLimit = dirsAsList.Where(a => a.Size > needToClearAtLeast);
+            return dirsThatFitTheLimit.Min(a => a.Size);
         }
 
-        private void GenerateTriangleNumber(int max)
+
+        class MDirectory
         {
-            triangleArray = new int[max];
-            triangleArray[0] = 0;
-            for (int i = 1; i < max; i++)
+            public string Name { get; set; }
+            public int Size => Childs.Sum(a => a.Value.Size) + Files.Sum(a => a.Value.Size);
+            public string FullPath => Parent?.FullPath + $"/{Name}";
+            public MDirectory Parent { get; set; }
+            public Dictionary<string, MDirectory> Childs { get; set; } = new Dictionary<string, MDirectory>();
+            public Dictionary<string, MFile> Files { get; set; } = new Dictionary<string, MFile>();
+
+
+            public IEnumerable<MDirectory> Dirs => Childs.Select(a => a.Value).Concat(Childs.SelectMany(a => a.Value.Dirs));
+
+
+            public int AOCSize => Size <= 100000 ? Size : 0;
+
+            public override string ToString()
             {
-                triangleArray[i] = triangleArray[i - 1] + i;
+                return this.Parent?.ToString() + $"/{Name}";
             }
         }
 
-        private static int[] triangleArray = new int[0];
+        class MFile
+        {
+            public string Name { get; set; }
+            public int Size { get; set; } = 0;
+            public string FullPath => Parent?.FullPath + $"/{Name}";
+            public MDirectory Parent { get; set; }
+        }
     }
 }
