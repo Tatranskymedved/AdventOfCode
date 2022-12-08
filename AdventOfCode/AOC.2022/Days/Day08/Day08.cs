@@ -15,94 +15,145 @@ namespace AOC._2022.Days
             //var path = @".\Days\Day08\input2.txt";
 
             var str = System.IO.File.ReadAllLines(path);
-            var charsToRemoveLR = new char[] { '|' };
-            var charsToRemove = new char[] { ' ', ':', '-' };
 
-            var values = str.Select(line =>
-            {
-                var leftRight = line.Split(charsToRemoveLR, StringSplitOptions.RemoveEmptyEntries);
-                var left = leftRight[0].Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries);
-                var right = leftRight[1].Split(charsToRemove, StringSplitOptions.RemoveEmptyEntries);
-                return new SegmentObservedRow(left, right);
-            });
+            var wood = new Wood(str);
+            wood.UpdateTreesVisibility();
 
-            //return values.Sum(a => a.ResultArray.Count(b => b == 1 || b == 4 || b == 7 || b == 8));
+            //Part 1
+            //wood.PrintTree();
+            //return wood.TreesVisibleCount;
 
             //Part 2
-            return values.Sum(a => a.ResultNumber);
-        }
-    }
-
-    class SegmentObservedRow
-    {
-        public string Zero { get; private set; }
-        public string One { get; private set; }
-        public string Two { get; private set; }
-        public string Three { get; private set; }
-        public string Four { get; private set; }
-        public string Five { get; private set; }
-        public string Six { get; private set; }
-        public string Seven { get; private set; }
-        public string Eight { get; private set; }
-        public string Nine { get; private set; }
-
-        public int[] ResultArray = new int[4] { -1, -1, -1, -1 };
-        public int ResultNumber { get; set; } = 0;
-
-        private Dictionary<int, string> dict = new Dictionary<int, string>();
-
-        public SegmentObservedRow(string[] left, string[] right)
-        {
-            Parse(left);
-            ParseResult(right);
+            wood.CalculateScenicScore();
+            //wood.PrintTree();
+            //Console.WriteLine(string.Join("", wood.Trees.SelectMany(a => a.Select(b => b.ScenicScore))));
+            return wood.MaxScenicScore;
         }
 
-        private void Parse(string[] left)
+        class Wood
         {
-            One = left.Where(a => a.Count() == 2).FirstOrDefault();
-            Four = left.Where(a => a.Count() == 4).FirstOrDefault();
-            Seven = left.Where(a => a.Count() == 3).FirstOrDefault();
-            Eight = "abcdefg";
+            public List<Tree[]> Trees { get; set; }
+            public int TreesVisibleCount => Trees.SelectMany(a => a.Select(b => b)).Count(a => a.IsVisible)
+                + (2 * Trees.Count) //Border
+                + (2 * Trees[0].Length) //Border
+                - 4; //Corners
 
-            //6 parts - 0,6,9
-            Six = left.Where(a => a.Count() == 6).Single(a => One.All(b => a.Contains(b)) == false);
-            char rightUp = Eight.First(a => Six.Contains(a) == false);
-            string leftUpAndMiddle = string.Concat(Four.Where(a => One.Contains(a) == false));
-            Nine = left.Where(a => a.Count() == 6).First(a => (a.All(b => Six.Contains(b)) == false) && leftUpAndMiddle.All(b => a.Contains(b)));
-            Zero = left.Where(a => a.Count() == 6).First(a => (a.All(b => Nine.Contains(b)) == false) && (a.All(b => Six.Contains(b)) == false));
+            public int MaxScenicScore => Trees.SelectMany(a => a.Select(b => b)).Max(a => a.ScenicScore);
 
-            //5 parts - 2,3,5
-            Three = left.Where(a => a.Count() == 5).Single(a => One.All(b => a.Contains(b)));
-            Two = left.Where(a => a.Count() == 5).Single(a => a.Contains(rightUp) && (a.All(b => Three.Contains(b)) == false));
-            Five = left.Where(a => a.Count() == 5).First(a => (a.All(b => Two.Contains(b)) == false) && (a.All(b => Three.Contains(b)) == false));
-        }
-
-
-        private void ParseResult(string[] right)
-        {
-            for (int i = 0; i < right.Length; i++)
+            public Wood(string[] trees)
             {
-                var str = right[i];
-                if (str.Length == One.Length && str.All(b => One.Contains(b))) ResultArray[i] = 1;
-                if (str.Length == Four.Length && str.All(b => Four.Contains(b))) ResultArray[i] = 4;
-                if (str.Length == Seven.Length && str.All(b => Seven.Contains(b))) ResultArray[i] = 7;
-                if (str.Length == Eight.Length && str.All(b => Eight.Contains(b))) ResultArray[i] = 8;
-
-                //Part 2
-                //6 parts - 0,6,9
-                if (str.Length == Zero.Length && str.All(b => Zero.Contains(b))) ResultArray[i] = 0;
-                if (str.Length == Six.Length && str.All(b => Six.Contains(b))) ResultArray[i] = 6;
-                if (str.Length == Nine.Length && str.All(b => Nine.Contains(b))) ResultArray[i] = 9;
-
-                //5 parts - 2,3,5
-                if (str.Length == Two.Length && str.All(b => Two.Contains(b))) ResultArray[i] = 2;
-                if (str.Length == Three.Length && str.All(b => Three.Contains(b))) ResultArray[i] = 3;
-                if (str.Length == Five.Length && str.All(b => Five.Contains(b))) ResultArray[i] = 5;
+                Trees = trees.Select(a => a.Select(b => new Tree()
+                {
+                    Height = Convert.ToInt32(b.ToString())
+                })
+                .ToArray()).ToList();
             }
-            if (ResultArray.Any(a => a < 0)) throw new Exception();
 
-            //Part 2
-            ResultNumber = Convert.ToInt32(ResultArray[0].ToString() + ResultArray[1].ToString() + ResultArray[2].ToString() + ResultArray[3].ToString());
+            public void UpdateTreesVisibility()
+            {
+                for (int x = 1; x < Trees[0].Length - 1; x++)
+                {
+                    int yDownBig = Trees[0][x].Height, yUpBig = Trees[Trees[x].Length - 1][x].Height;
+
+                    for (int yDown = 1; yDown < Trees.Count - 1; yDown++)
+                    {
+                        if (Trees[yDown][x].Height > yDownBig)
+                        {
+                            Trees[yDown][x].IsVisible = true;
+                            yDownBig = Trees[yDown][x].Height;
+                        }
+                    }
+                    for (int yUp = Trees.Count - 2; yUp > 0; yUp--)
+                    {
+                        if (Trees[yUp][x].Height > yUpBig)
+                        {
+                            Trees[yUp][x].IsVisible = true;
+                            yUpBig = Trees[yUp][x].Height;
+                        }
+                    }
+                }
+
+                for (int y = 1; y < Trees.Count - 1; y++)
+                {
+                    int xRightBig = Trees[y][0].Height, xLeftBig = Trees[y][Trees[y].Length - 1].Height;
+
+                    for (int xRight = 1; xRight < Trees[y].Length - 1; xRight++)
+                    {
+                        if (Trees[y][xRight].Height > xRightBig)
+                        {
+                            Trees[y][xRight].IsVisible = true;
+                            xRightBig = Trees[y][xRight].Height;
+                        }
+                    }
+                    for (int xLeft = Trees[y].Length - 2; xLeft > 0; xLeft--)
+                    {
+                        if (Trees[y][xLeft].Height > xLeftBig)
+                        {
+                            Trees[y][xLeft].IsVisible = true;
+                            xLeftBig = Trees[y][xLeft].Height;
+                        }
+                    }
+                }
+            }
+
+            public void CalculateScenicScore()
+            {
+                for (int baseX = 0; baseX < Trees[0].Length; baseX++)
+                {
+                    for (int baseY = 0; baseY < Trees.Count; baseY++)
+                    {
+                        var tree = Trees[baseY][baseX];
+                        if (tree.IsVisible == false) continue;
+
+
+                        int y = baseY;
+                        do { tree.ScoreDown++; y++; } while (y < Trees.Count - 1 && tree.Height > Trees[y][baseX].Height);
+                        y = baseY;
+                        do { tree.ScoreUp++; y--; } while (y > 0 && tree.Height > Trees[y][baseX].Height);
+
+                        int x = baseX;
+                        do { tree.ScoreRight++; x++; } while (x < Trees[baseY].Length - 1 && tree.Height > Trees[baseY][x].Height);
+                        x = baseX;
+                        do { tree.ScoreLeft++; x--; } while (x > 0 && tree.Height > Trees[baseY][x].Height);
+                    }
+                }
+            }
+
+            public void PrintTree()
+            {
+                for (int i = 0; i < Trees.Count; i++)
+                {
+                    for (int j = 0; j < Trees[i].Length; j++)
+                    {
+                        var orig = Console.ForegroundColor;
+
+                        var tree = Trees[i][j];
+                        if (tree.IsVisible)
+                            Console.ForegroundColor = ConsoleColor.Green;
+
+                        //Console.Write(Trees[i][j].Height);
+                        Console.Write(Trees[i][j].ScenicScore);
+
+                        Console.ForegroundColor = orig;
+                    }
+                    Console.WriteLine();
+                }
+            }
+        }
+
+        class Tree
+        {
+            public int Height { get; set; }
+            public bool IsVisible { get; set; } = false;
+
+            const int start = 0;
+
+            public int ScoreRight { get; set; } = start;
+            public int ScoreLeft { get; set; } = start;
+            public int ScoreUp { get; set; } = start;
+            public int ScoreDown { get; set; } = start;
+            public int ScenicScore => ScoreRight * ScoreLeft * ScoreUp * ScoreDown;
         }
     }
+
 }
