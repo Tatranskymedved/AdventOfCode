@@ -1,0 +1,8 @@
+﻿
+using AOC._2025;
+using AOC._2025.Days;
+
+var day = new Day01();
+Console.WriteLine(day.Main());
+
+Console.ReadLine();
