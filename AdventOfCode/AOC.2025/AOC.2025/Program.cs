@@ -2,7 +2,7 @@
 using AOC._2025;
 using AOC._2025.Days;
 
-var day = new Day01();
+var day = new Day02();
 Console.WriteLine(day.Main());
 
 Console.ReadLine();
